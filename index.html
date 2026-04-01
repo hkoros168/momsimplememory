@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>記憶遊戲</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .phase { display: none; flex-direction: column; align-items: center; }
+  .phase.active { display: flex; }
+  .label {
+    font-size: 1.5em;
+    color: #374151;
+    margin-bottom: 24px;
+  }
+  .big-shape {
+    font-size: 8em;
+    margin-bottom: 40px;
+    line-height: 1;
+  }
+  .btn {
+    border: none;
+    border-radius: 16px;
+    padding: 20px 40px;
+    font-size: 1.2em;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .btn-blue { background: #3b82f6; }
+  .btn-blue:hover { background: #2563eb; }
+  .btn-green { background: #22c55e; }
+  .btn-green:hover { background: #16a34a; }
+  .btn span.sub {
+    font-size: 0.75em;
+    margin-top: 4px;
+    opacity: 0.8;
+  }
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    max-width: 300px;
+  }
+  .choice-btn {
+    background: #f9fafb;
+    border: 4px solid #d1d5db;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    font-size: 1em;
+  }
+  .choice-btn:hover {
+    border-color: #60a5fa;
+    background: #eff6ff;
+  }
+  .choice-shape {
+    font-size: 3.5em;
+    line-height: 1;
+  }
+  .choice-text {
+    font-size: 1.1em;
+    color: #6b7280;
+  }
+  .result-text {
+    font-size: 2em;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+  .red { color: #ef4444; }
+  .blue { color: #3b82f6; }
+  .green { color: #22c55e; }
+  .orange { color: #f97316; }
+  .purple { color: #a855f7; }
+  .yellow { color: #eab308; }
+</style>
+</head>
+<body>
+
+<div id="look" class="phase">
+  <p class="label">睇吓呢個圖形：</p>
+  <div id="showShape" class="big-shape"></div>
+  <button class="btn btn-blue" onclick="goGuess()">
+    <span>👆 記住咗就撳呢度</span>
+    <span class="sub">個圖形會消失㗎！</span>
+  </button>
+</div>
+
+<div id="guess" class="phase">
+  <p class="label">請撳你見過嘅圖形</p>
+  <div id="choicesContainer" class="choices"></div>
+</div>
+
+<div id="result" class="phase">
+  <p id="resultText" class="result-text"></p>
+  <button class="btn btn-green" onclick="newRound()">
+    <span>👆 撳呢度再玩</span>
+    <span class="sub">會出新圖形㗎！</span>
+  </button>
+</div>
+
+<script>
+  const items = [
+    { shape: '⬤', colorClass: 'red', name: '紅色圓形' },
+    { shape: '⬤', colorClass: 'blue', name: '藍色圓形' },
+    { shape: '⬤', colorClass: 'green', name: '綠色圓形' },
+    { shape: '■', colorClass: 'orange', name: '橙色正方形' },
+    { shape: '■', colorClass: 'purple', name: '紫色正方形' },
+    { shape: '▲', colorClass: 'yellow', name: '黃色三角形' },
+  ];
+
+  let answer = null;
+  let choices = [];
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function pickRandom(arr, n) {
+    return shuffle(arr).slice(0, n);
+  }
+
+  function showPhase(id) {
+    document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function newRound() {
+    const picked = pickRandom(items, 3);
+    answer = picked[Math.floor(Math.random() * 3)];
+    choices = shuffle(picked);
+
+    const showShape = document.getElementById('showShape');
+    showShape.textContent = answer.shape;
+    showShape.className = 'big-shape ' + answer.colorClass;
+
+    showPhase('look');
+  }
+
+  function goGuess() {
+    const container = document.getElementById('choicesContainer');
+    container.innerHTML = '';
+
+    choices.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'choice-btn';
+      btn.innerHTML =
+        '<span class="choice-shape ' + item.colorClass + '">' + item.shape + '</span>' +
+        '<span class="choice-text">👈 撳呢個</span>';
+      btn.onclick = function () { checkAnswer(item); };
+      container.appendChild(btn);
+    });
+
+    showPhase('guess');
+  }
+
+  function checkAnswer(item) {
+    const resultText = document.getElementById('resultText');
+    if (item.name === answer.name) {
+      resultText.textContent = '✅ 答對了！好叻！';
+    } else {
+      resultText.textContent = '❌ 唔啱呀，再試吓！';
+    }
+    showPhase('result');
+  }
+
+  newRound();
+</script>
+
+</body>
+</html>
