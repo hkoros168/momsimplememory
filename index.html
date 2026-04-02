@@ -8,7 +8,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: Arial, sans-serif;
-    background: white;
+    background: #f3f4f6;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -28,6 +28,7 @@
     margin-bottom: 50px;
     line-height: 1;
   }
+
   .btn {
     border: none;
     border-radius: 20px;
@@ -38,16 +39,46 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    top: 0;
+    transition: all 0.1s ease;
+    text-shadow: 0 2px 2px rgba(0,0,0,0.2);
   }
-  .btn-blue { background: #3b82f6; }
-  .btn-blue:hover { background: #2563eb; }
-  .btn-green { background: #22c55e; }
-  .btn-green:hover { background: #16a34a; }
+  .btn:active {
+    top: 6px;
+    box-shadow: none !important;
+  }
+
+  .btn-blue {
+    background: linear-gradient(to bottom, #60a5fa, #2563eb);
+    box-shadow: 0 8px 0 #1d4ed8, 0 12px 16px rgba(0,0,0,0.2);
+  }
+  .btn-blue:hover {
+    background: linear-gradient(to bottom, #93bbfd, #3b82f6);
+  }
+  .btn-blue:active {
+    background: linear-gradient(to bottom, #3b82f6, #2563eb);
+    box-shadow: 0 2px 0 #1d4ed8;
+  }
+
+  .btn-green {
+    background: linear-gradient(to bottom, #4ade80, #16a34a);
+    box-shadow: 0 8px 0 #15803d, 0 12px 16px rgba(0,0,0,0.2);
+  }
+  .btn-green:hover {
+    background: linear-gradient(to bottom, #86efac, #22c55e);
+  }
+  .btn-green:active {
+    background: linear-gradient(to bottom, #22c55e, #16a34a);
+    box-shadow: 0 2px 0 #15803d;
+  }
+
   .btn span.sub {
     font-size: 0.65em;
     margin-top: 6px;
-    opacity: 0.8;
+    opacity: 0.85;
   }
+
   .choices {
     display: flex;
     flex-direction: column;
@@ -56,8 +87,8 @@
     max-width: 400px;
   }
   .choice-btn {
-    background: #f9fafb;
-    border: 5px solid #d1d5db;
+    background: linear-gradient(to bottom, #ffffff, #e5e7eb);
+    border: none;
     border-radius: 20px;
     padding: 24px;
     display: flex;
@@ -65,11 +96,21 @@
     gap: 20px;
     cursor: pointer;
     font-size: 1em;
+    position: relative;
+    top: 0;
+    box-shadow: 0 8px 0 #9ca3af, 0 12px 16px rgba(0,0,0,0.15);
+    transition: all 0.1s ease;
   }
   .choice-btn:hover {
-    border-color: #60a5fa;
-    background: #eff6ff;
+    background: linear-gradient(to bottom, #eff6ff, #bfdbfe);
+    box-shadow: 0 8px 0 #60a5fa, 0 12px 16px rgba(0,0,0,0.15);
   }
+  .choice-btn:active {
+    top: 6px;
+    box-shadow: 0 2px 0 #9ca3af;
+    background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
+  }
+
   .choice-shape {
     font-size: 5em;
     line-height: 1;
@@ -77,6 +118,7 @@
   .choice-text {
     font-size: 1.6em;
     color: #6b7280;
+    font-weight: bold;
   }
   .result-text {
     font-size: 3em;
