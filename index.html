@@ -23,10 +23,12 @@
     color: #374151;
     margin-bottom: 32px;
   }
-  .big-shape {
-    font-size: 12em;
+  .big-number {
+    font-size: 14em;
+    font-weight: bold;
     margin-bottom: 50px;
     line-height: 1;
+    color: #1e3a5f;
   }
 
   .btn {
@@ -82,7 +84,7 @@
   .choices {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 24px;
     width: 100%;
     max-width: 400px;
   }
@@ -90,10 +92,10 @@
     background: linear-gradient(to bottom, #ffffff, #e5e7eb);
     border: none;
     border-radius: 20px;
-    padding: 24px;
+    padding: 30px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
     cursor: pointer;
     font-size: 1em;
     position: relative;
@@ -111,41 +113,38 @@
     background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
   }
 
-  .choice-shape {
+  .choice-number {
     font-size: 5em;
+    font-weight: bold;
     line-height: 1;
+    color: #1e3a5f;
   }
   .choice-text {
     font-size: 1.6em;
     color: #6b7280;
     font-weight: bold;
   }
+
   .result-text {
     font-size: 3em;
     margin-bottom: 40px;
     text-align: center;
   }
-  .red { color: #ef4444; }
-  .blue { color: #3b82f6; }
-  .green { color: #22c55e; }
-  .orange { color: #f97316; }
-  .purple { color: #a855f7; }
-  .yellow { color: #eab308; }
 </style>
 </head>
 <body>
 
 <div id="look" class="phase">
-  <p class="label">睇吓呢個圖形：</p>
-  <div id="showShape" class="big-shape"></div>
+  <p class="label">睇吓呢個數字：</p>
+  <div id="showNumber" class="big-number"></div>
   <button class="btn btn-blue" onclick="goGuess()">
     <span>👆 記住咗就撳呢度</span>
-    <span class="sub">個圖形會消失㗎！</span>
+    <span class="sub">個數字會消失㗎！</span>
   </button>
 </div>
 
 <div id="guess" class="phase">
-  <p class="label">請撳你見過嘅圖形</p>
+  <p class="label">請撳你見過嘅數字</p>
   <div id="choicesContainer" class="choices"></div>
 </div>
 
@@ -153,20 +152,11 @@
   <p id="resultText" class="result-text"></p>
   <button class="btn btn-green" onclick="newRound()">
     <span>👆 撳呢度再玩</span>
-    <span class="sub">會出新圖形㗎！</span>
+    <span class="sub">會出新數字㗎！</span>
   </button>
 </div>
 
 <script>
-  const items = [
-    { shape: '⬤', colorClass: 'red', name: '紅色圓形' },
-    { shape: '⬤', colorClass: 'blue', name: '藍色圓形' },
-    { shape: '⬤', colorClass: 'green', name: '綠色圓形' },
-    { shape: '■', colorClass: 'orange', name: '橙色正方形' },
-    { shape: '■', colorClass: 'purple', name: '紫色正方形' },
-    { shape: '▲', colorClass: 'yellow', name: '黃色三角形' },
-  ];
-
   let answer = null;
   let choices = [];
 
@@ -179,8 +169,12 @@
     return a;
   }
 
-  function pickRandom(arr, n) {
-    return shuffle(arr).slice(0, n);
+  function pickChoices(correct) {
+    const all = [1, 2, 3, 4, 5];
+    const others = all.filter(n => n !== correct);
+    const picked = shuffle(others).slice(0, 2);
+    picked.push(correct);
+    return shuffle(picked);
   }
 
   function showPhase(id) {
@@ -189,13 +183,10 @@
   }
 
   function newRound() {
-    const picked = pickRandom(items, 3);
-    answer = picked[Math.floor(Math.random() * 3)];
-    choices = shuffle(picked);
+    answer = Math.floor(Math.random() * 5) + 1;
+    choices = pickChoices(answer);
 
-    const showShape = document.getElementById('showShape');
-    showShape.textContent = answer.shape;
-    showShape.className = 'big-shape ' + answer.colorClass;
+    document.getElementById('showNumber').textContent = answer;
 
     showPhase('look');
   }
@@ -204,22 +195,22 @@
     const container = document.getElementById('choicesContainer');
     container.innerHTML = '';
 
-    choices.forEach(item => {
+    choices.forEach(num => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
       btn.innerHTML =
-        '<span class="choice-shape ' + item.colorClass + '">' + item.shape + '</span>' +
+        '<span class="choice-number">' + num + '</span>' +
         '<span class="choice-text">👈 撳呢個</span>';
-      btn.onclick = function () { checkAnswer(item); };
+      btn.onclick = function () { checkAnswer(num); };
       container.appendChild(btn);
     });
 
     showPhase('guess');
   }
 
-  function checkAnswer(item) {
+  function checkAnswer(num) {
     const resultText = document.getElementById('resultText');
-    if (item.name === answer.name) {
+    if (num === answer) {
       resultText.textContent = '✅ 答對了！好叻！';
     } else {
       resultText.textContent = '❌ 唔啱呀，再試吓！';
