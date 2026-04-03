@@ -6,109 +6,95 @@
 <title>記憶遊戲</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html, body {
-    width: 100%;
-    height: 100%;
     font-family: Arial, sans-serif;
     background: #f3f4f6;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
   }
-
   body {
     display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .phase {
-    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    max-width: 700px;
-    padding: 24px;
-    text-align: center;
   }
-
-  .phase.active {
-    display: flex;
-  }
-
+  .phase { display: none; flex-direction: column; align-items: center; width: 100%; padding: 24px; }
+  .phase.active { display: flex; }
   .label {
-    font-size: 2.4em;
+    font-size: 2.5em;
     color: #374151;
     margin-bottom: 24px;
+    text-align: center;
   }
-
   .big-number {
-    font-size: 12em;
+    font-size: 14em;
     font-weight: bold;
+    margin-bottom: 40px;
     line-height: 1;
     color: #1e3a5f;
-    margin-bottom: 36px;
   }
-
   .big-icon {
-    font-size: 7em;
+    font-size: 8em;
+    margin-bottom: 30px;
     line-height: 1;
-    margin-bottom: 24px;
-  }
-
-  .btn,
-  .choice-btn {
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-appearance: none;
-    appearance: none;
   }
 
   .btn {
-    color: white;
-    font-size: 1.8em;
+    border: none;
+    border-radius: 20px;
     padding: 28px 50px;
+    font-size: 1.8em;
+    color: white;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    top: 0;
+    transition: all 0.05s ease;
     text-shadow: 0 2px 2px rgba(0,0,0,0.2);
-    transition: transform 0.05s ease, box-shadow 0.05s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-
-  .btn:active {
-    transform: translateY(4px);
+  .btn:active, .btn.pressed {
+    top: 6px;
+    box-shadow: none !important;
   }
 
   .btn-orange {
     background: linear-gradient(to bottom, #fb923c, #ea580c);
     box-shadow: 0 8px 0 #c2410c, 0 12px 16px rgba(0,0,0,0.2);
   }
-
-  .btn-orange:active {
-    box-shadow: 0 3px 0 #c2410c, 0 6px 10px rgba(0,0,0,0.18);
+  .btn-orange:active, .btn-orange.pressed {
+    background: linear-gradient(to bottom, #ea580c, #c2410c);
+    box-shadow: 0 2px 0 #9a3412;
   }
 
   .btn-blue {
     background: linear-gradient(to bottom, #60a5fa, #2563eb);
     box-shadow: 0 8px 0 #1d4ed8, 0 12px 16px rgba(0,0,0,0.2);
   }
-
-  .btn-blue:active {
-    box-shadow: 0 3px 0 #1d4ed8, 0 6px 10px rgba(0,0,0,0.18);
+  .btn-blue:active, .btn-blue.pressed {
+    background: linear-gradient(to bottom, #3b82f6, #2563eb);
+    box-shadow: 0 2px 0 #1d4ed8;
   }
 
   .btn-green {
     background: linear-gradient(to bottom, #4ade80, #16a34a);
     box-shadow: 0 8px 0 #15803d, 0 12px 16px rgba(0,0,0,0.2);
   }
-
-  .btn-green:active {
-    box-shadow: 0 3px 0 #15803d, 0 6px 10px rgba(0,0,0,0.18);
+  .btn-green:active, .btn-green.pressed {
+    background: linear-gradient(to bottom, #22c55e, #16a34a);
+    box-shadow: 0 2px 0 #15803d;
   }
 
   .btn span.sub {
@@ -118,113 +104,267 @@
   }
 
   .choices {
-    width: 100%;
-    max-width: 420px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
-  }
-
-  .choice-btn {
+    gap: 20px;
     width: 100%;
+    max-width: 420px;
+  }
+  .choice-btn {
     background: linear-gradient(to bottom, #ffffff, #e5e7eb);
-    box-shadow: 0 8px 0 #9ca3af, 0 12px 16px rgba(0,0,0,0.15);
-    padding: 26px 28px;
+    border: none;
+    border-radius: 20px;
+    padding: 28px 30px;
     display: flex;
     align-items: center;
-    gap: 22px;
-    transition: transform 0.05s ease, box-shadow 0.05s ease;
+    gap: 24px;
+    cursor: pointer;
+    font-size: 1em;
+    position: relative;
+    top: 0;
+    box-shadow: 0 8px 0 #9ca3af, 0 12px 16px rgba(0,0,0,0.15);
+    transition: all 0.05s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-
-  .choice-btn:active {
-    transform: translateY(4px);
-    box-shadow: 0 3px 0 #9ca3af, 0 6px 10px rgba(0,0,0,0.12);
+  .choice-btn:hover {
+    background: linear-gradient(to bottom, #eff6ff, #bfdbfe);
+    box-shadow: 0 8px 0 #60a5fa, 0 12px 16px rgba(0,0,0,0.15);
+  }
+  .choice-btn:active, .choice-btn.pressed {
+    top: 6px;
+    box-shadow: 0 2px 0 #9ca3af;
+    background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
   }
 
   .choice-number {
-    font-size: 4.8em;
+    font-size: 5em;
     font-weight: bold;
     line-height: 1;
     color: #1e3a5f;
   }
-
   .choice-text {
-    font-size: 1.5em;
-    font-weight: bold;
+    font-size: 1.6em;
     color: #6b7280;
+    font-weight: bold;
   }
 
   .result-text {
     font-size: 3em;
     margin-bottom: 40px;
+    text-align: center;
   }
 
   .sound-status {
-    min-height: 1.6em;
-    margin-top: 18px;
-    font-size: 1.2em;
+    font-size: 1.3em;
     color: #6b7280;
-  }
-
-  @media (max-width: 768px) {
-    .label { font-size: 2em; }
-    .big-number { font-size: 9em; }
-    .big-icon { font-size: 6em; }
-    .btn { font-size: 1.5em; padding: 24px 32px; }
-    .choice-number { font-size: 4em; }
-    .choice-text { font-size: 1.3em; }
-    .result-text { font-size: 2.4em; }
+    margin-top: 20px;
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
+<!-- PHASE 0: Sound unlock screen -->
 <div id="start" class="phase active">
   <div class="big-icon">🔊</div>
   <p class="label">記憶數字遊戲</p>
-  <button class="btn btn-orange" id="soundBtn" type="button">
+  <button class="btn btn-orange" id="soundBtn">
     <span>👆 撳呢度開聲</span>
     <span class="sub">開咗聲先可以玩！</span>
   </button>
   <p id="soundStatus" class="sound-status"></p>
 </div>
 
+<!-- PHASE 1: Look at number -->
 <div id="look" class="phase">
   <p class="label">睇吓呢個數字：</p>
   <div id="showNumber" class="big-number"></div>
-  <button class="btn btn-blue" id="readyBtn" type="button">
+  <button class="btn btn-blue" id="readyBtn">
     <span>👆 記住咗就撳呢度</span>
     <span class="sub">個數字會消失㗎！</span>
   </button>
 </div>
 
+<!-- PHASE 2: Guess -->
 <div id="guess" class="phase">
   <p class="label">請撳你見過嘅數字</p>
   <div id="choicesContainer" class="choices"></div>
 </div>
 
+<!-- PHASE 3: Result -->
 <div id="result" class="phase">
   <p id="resultText" class="result-text"></p>
-  <button class="btn btn-green" id="againBtn" type="button">
+  <button class="btn btn-green" id="againBtn">
     <span>👆 撳呢度再玩</span>
     <span class="sub">會出新數字㗎！</span>
   </button>
 </div>
 
 <script>
+  document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('scroll', function(e) { e.preventDefault(); }, { passive: false });
+
   var answer = null;
   var choices = [];
   var audioCtx = null;
-  var soundUnlocked = false;
-  var busy = false;
 
-  function showPhase(id) {
-    document.querySelectorAll('.phase').forEach(function(el) {
-      el.classList.remove('active');
-    });
-    document.getElementById(id).classList.add('active');
+  // ---- Helper: ensure AudioContext is alive ----
+  function ensureAudio() {
+    if (!audioCtx) return false;
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    return true;
   }
 
+  // ---- SOUND UNLOCK from user tap ----
+  // CRITICAL: Everything must run synchronously inside the gesture handler.
+  // Do NOT defer sound-playing into a .then() callback — iOS will block it.
+  function unlockAndTestSound() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    } catch(e) {
+      document.getElementById('soundStatus').textContent = '⚠️ 呢部機唔支援聲音';
+      return;
+    }
+
+    // Resume (fire and forget — do NOT wait for the promise)
+    audioCtx.resume();
+
+    // iOS unlock trick: play a tiny silent buffer synchronously in the gesture
+    try {
+      var silentBuffer = audioCtx.createBuffer(1, 1, 22050);
+      var silentSource = audioCtx.createBufferSource();
+      silentSource.buffer = silentBuffer;
+      silentSource.connect(audioCtx.destination);
+      silentSource.start(0);
+    } catch(e) {}
+
+    // Play test tone SYNCHRONOUSLY (same call stack as the gesture)
+    playTestTone();
+
+    // Unlock speech synthesis in the same gesture
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        var warmup = new SpeechSynthesisUtterance(' ');
+        warmup.volume = 0.01;
+        warmup.rate = 10;
+        window.speechSynthesis.speak(warmup);
+      }
+    } catch(e) {}
+
+    // After short delay, move to game
+    setTimeout(function() {
+      newRound();
+    }, 600);
+  }
+
+  function playTestTone() {
+    if (!audioCtx) return;
+
+    var now = audioCtx.currentTime;
+
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.3, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.45);
+
+    var osc2 = audioCtx.createOscillator();
+    var gain2 = audioCtx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = 1320;
+    gain2.gain.setValueAtTime(0.001, now + 0.08);
+    gain2.gain.linearRampToValueAtTime(0.2, now + 0.1);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+    osc2.start(now + 0.08);
+    osc2.stop(now + 0.55);
+  }
+
+  // ---- GAME SOUNDS ----
+  function playCheerfulChime() {
+    if (!ensureAudio()) return;
+
+    var now = audioCtx.currentTime;
+    var notes = [523.25, 659.25, 783.99, 1046.50];
+    var spacing = 0.1;
+
+    for (var i = 0; i < notes.length; i++) {
+      (function(idx) {
+        var t = now + idx * spacing;
+        var osc = audioCtx.createOscillator();
+        var gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = notes[idx];
+        gain.gain.setValueAtTime(0.001, t);
+        gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(t);
+        osc.stop(t + 0.5);
+
+        var osc2 = audioCtx.createOscillator();
+        var gain2 = audioCtx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.value = notes[idx] * 2;
+        gain2.gain.setValueAtTime(0.001, t);
+        gain2.gain.linearRampToValueAtTime(0.08, t + 0.02);
+        gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.start(t);
+        osc2.stop(t + 0.4);
+      })(i);
+    }
+  }
+
+  function playWrongBuzz() {
+    if (!ensureAudio()) return;
+
+    var now = audioCtx.currentTime;
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.linearRampToValueAtTime(120, now + 0.3);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+  }
+
+  function trySayGood() {
+    try {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        setTimeout(function() {
+          var u = new SpeechSynthesisUtterance('Good!');
+          u.lang = 'en-US';
+          u.pitch = 1.5;
+          u.rate = 1.05;
+          u.volume = 1;
+          window.speechSynthesis.speak(u);
+        }, 50);
+      }
+    } catch(e) {}
+  }
+
+  // ---- GAME LOGIC ----
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
@@ -244,103 +384,12 @@
     return shuffle(picked);
   }
 
-  function initAudio() {
-    if (!audioCtx) {
-      var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) throw new Error('Web Audio not supported');
-      audioCtx = new Ctx();
-    }
-    return audioCtx.resume();
-  }
-
-  function simpleBeep(freq, duration, volume, type, when) {
-    if (!audioCtx) return;
-    var t = when || audioCtx.currentTime;
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-
-    osc.type = type || 'sine';
-    osc.frequency.setValueAtTime(freq, t);
-
-    gain.gain.setValueAtTime(0.0001, t);
-    gain.gain.linearRampToValueAtTime(volume, t + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    osc.start(t);
-    osc.stop(t + duration + 0.03);
-  }
-
-  function unlockAndStart() {
-    if (busy) return;
-    busy = true;
-
-    var status = document.getElementById('soundStatus');
-    status.textContent = '開聲中...';
-
-    initAudio().then(function() {
-      soundUnlocked = true;
-
-      var now = audioCtx.currentTime + 0.02;
-      simpleBeep(880, 0.18, 0.18, 'sine', now);
-      simpleBeep(1320, 0.18, 0.12, 'sine', now + 0.08);
-
-      status.textContent = '✅ 已開聲';
-
-      setTimeout(function() {
-        busy = false;
-        newRound();
-      }, 350);
-    }).catch(function(err) {
-      console.log(err);
-      status.textContent = '⚠️ 開聲失敗，請再撳一次';
-      busy = false;
-    });
-  }
-
-  function playCorrectSound() {
-    if (!soundUnlocked || !audioCtx) return;
-
-    audioCtx.resume().then(function() {
-      var now = audioCtx.currentTime + 0.01;
-      simpleBeep(523.25, 0.22, 0.18, 'sine', now);
-      simpleBeep(659.25, 0.22, 0.18, 'sine', now + 0.10);
-      simpleBeep(783.99, 0.22, 0.18, 'sine', now + 0.20);
-      simpleBeep(1046.50, 0.30, 0.22, 'sine', now + 0.30);
-    }).catch(function(err) {
-      console.log(err);
-    });
-  }
-
-  function playWrongSound() {
-    if (!soundUnlocked || !audioCtx) return;
-
-    audioCtx.resume().then(function() {
-      var now = audioCtx.currentTime + 0.01;
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(180, now);
-      osc.frequency.linearRampToValueAtTime(120, now + 0.25);
-
-      gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(now);
-      osc.stop(now + 0.30);
-    }).catch(function(err) {
-      console.log(err);
-    });
+  function showPhase(id) {
+    document.querySelectorAll('.phase').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
   }
 
   function newRound() {
-    if (busy) return;
     answer = Math.floor(Math.random() * 5) + 1;
     choices = pickChoices(answer);
     document.getElementById('showNumber').textContent = answer;
@@ -348,20 +397,32 @@
   }
 
   function goGuess() {
-    if (busy) return;
-
     var container = document.getElementById('choicesContainer');
     container.innerHTML = '';
 
     choices.forEach(function(num) {
       var btn = document.createElement('button');
-      btn.type = 'button';
       btn.className = 'choice-btn';
       btn.innerHTML =
         '<span class="choice-number">' + num + '</span>' +
         '<span class="choice-text">👈 撳呢個</span>';
 
+      var handled = false;
+      btn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        if (handled) return;
+        handled = true;
+        btn.classList.add('pressed');
+        checkAnswer(num);
+      }, { passive: false });
+
+      btn.addEventListener('touchend', function() {
+        btn.classList.remove('pressed');
+      });
+
       btn.addEventListener('click', function() {
+        if (handled) return;
+        handled = true;
         checkAnswer(num);
       });
 
@@ -372,37 +433,45 @@
   }
 
   function checkAnswer(num) {
-    if (busy) return;
-    busy = true;
-
     var resultText = document.getElementById('resultText');
-
     if (num === answer) {
       resultText.textContent = '✅ 答對了！好叻！';
-      playCorrectSound();
+      playCheerfulChime();
+      trySayGood();
     } else {
       resultText.textContent = '❌ 唔啱呀，再試吓！';
-      playWrongSound();
+      playWrongBuzz();
     }
-
     showPhase('result');
-
-    setTimeout(function() {
-      busy = false;
-    }, 300);
   }
 
-  document.getElementById('soundBtn').addEventListener('click', unlockAndStart);
-  document.getElementById('readyBtn').addEventListener('click', goGuess);
-  document.getElementById('againBtn').addEventListener('click', newRound);
+  function addFastTouch(el, callback) {
+    var handled = false;
 
-  document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended') {
-      audioCtx.resume().catch(function(err) {
-        console.log(err);
-      });
-    }
-  });
+    el.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      if (handled) return;
+      handled = true;
+      el.classList.add('pressed');
+      callback();
+      setTimeout(function() { handled = false; }, 400);
+    }, { passive: false });
+
+    el.addEventListener('touchend', function() {
+      el.classList.remove('pressed');
+    });
+
+    el.addEventListener('click', function() {
+      if (handled) return;
+      callback();
+    });
+  }
+
+  // ---- WIRE UP BUTTONS ----
+  addFastTouch(document.getElementById('soundBtn'), unlockAndTestSound);
+  addFastTouch(document.getElementById('readyBtn'), goGuess);
+  addFastTouch(document.getElementById('againBtn'), newRound);
+
 </script>
 
 </body>
