@@ -2,31 +2,42 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>記憶遊戲</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
+  html, body {
     font-family: Arial, sans-serif;
     background: #f3f4f6;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  body {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: 24px;
   }
-  .phase { display: none; flex-direction: column; align-items: center; }
+  .phase { display: none; flex-direction: column; align-items: center; width: 100%; padding: 24px; }
   .phase.active { display: flex; }
   .label {
     font-size: 2.5em;
     color: #374151;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
   }
   .big-number {
     font-size: 14em;
     font-weight: bold;
-    margin-bottom: 50px;
+    margin-bottom: 40px;
     line-height: 1;
     color: #1e3a5f;
   }
@@ -43,10 +54,12 @@
     align-items: center;
     position: relative;
     top: 0;
-    transition: all 0.1s ease;
+    transition: all 0.05s ease;
     text-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
-  .btn:active {
+  .btn:active, .btn.pressed {
     top: 6px;
     box-shadow: none !important;
   }
@@ -58,7 +71,7 @@
   .btn-blue:hover {
     background: linear-gradient(to bottom, #93bbfd, #3b82f6);
   }
-  .btn-blue:active {
+  .btn-blue:active, .btn-blue.pressed {
     background: linear-gradient(to bottom, #3b82f6, #2563eb);
     box-shadow: 0 2px 0 #1d4ed8;
   }
@@ -70,7 +83,7 @@
   .btn-green:hover {
     background: linear-gradient(to bottom, #86efac, #22c55e);
   }
-  .btn-green:active {
+  .btn-green:active, .btn-green.pressed {
     background: linear-gradient(to bottom, #22c55e, #16a34a);
     box-shadow: 0 2px 0 #15803d;
   }
@@ -84,15 +97,15 @@
   .choices {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
     width: 100%;
-    max-width: 400px;
+    max-width: 420px;
   }
   .choice-btn {
     background: linear-gradient(to bottom, #ffffff, #e5e7eb);
     border: none;
     border-radius: 20px;
-    padding: 30px;
+    padding: 28px 30px;
     display: flex;
     align-items: center;
     gap: 24px;
@@ -101,13 +114,15 @@
     position: relative;
     top: 0;
     box-shadow: 0 8px 0 #9ca3af, 0 12px 16px rgba(0,0,0,0.15);
-    transition: all 0.1s ease;
+    transition: all 0.05s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   .choice-btn:hover {
     background: linear-gradient(to bottom, #eff6ff, #bfdbfe);
     box-shadow: 0 8px 0 #60a5fa, 0 12px 16px rgba(0,0,0,0.15);
   }
-  .choice-btn:active {
+  .choice-btn:active, .choice-btn.pressed {
     top: 6px;
     box-shadow: 0 2px 0 #9ca3af;
     background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
@@ -137,7 +152,7 @@
 <div id="look" class="phase">
   <p class="label">睇吓呢個數字：</p>
   <div id="showNumber" class="big-number"></div>
-  <button class="btn btn-blue" onclick="goGuess()">
+  <button class="btn btn-blue" id="readyBtn">
     <span>👆 記住咗就撳呢度</span>
     <span class="sub">個數字會消失㗎！</span>
   </button>
@@ -150,13 +165,17 @@
 
 <div id="result" class="phase">
   <p id="resultText" class="result-text"></p>
-  <button class="btn btn-green" onclick="newRound()">
+  <button class="btn btn-green" id="againBtn">
     <span>👆 撳呢度再玩</span>
     <span class="sub">會出新數字㗎！</span>
   </button>
 </div>
 
 <script>
+  // Prevent all scrolling
+  document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('scroll', function(e) { e.preventDefault(); }, { passive: false });
+
   let answer = null;
   let choices = [];
 
@@ -185,9 +204,7 @@
   function newRound() {
     answer = Math.floor(Math.random() * 5) + 1;
     choices = pickChoices(answer);
-
     document.getElementById('showNumber').textContent = answer;
-
     showPhase('look');
   }
 
@@ -201,7 +218,21 @@
       btn.innerHTML =
         '<span class="choice-number">' + num + '</span>' +
         '<span class="choice-text">👈 撳呢個</span>';
-      btn.onclick = function () { checkAnswer(num); };
+
+      btn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        btn.classList.add('pressed');
+        checkAnswer(num);
+      }, { passive: false });
+
+      btn.addEventListener('touchend', function() {
+        btn.classList.remove('pressed');
+      });
+
+      btn.addEventListener('click', function() {
+        checkAnswer(num);
+      });
+
       container.appendChild(btn);
     });
 
@@ -217,6 +248,24 @@
     }
     showPhase('result');
   }
+
+  // Fast touch handling for main buttons
+  function addFastTouch(el, callback) {
+    el.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      el.classList.add('pressed');
+      callback();
+    }, { passive: false });
+
+    el.addEventListener('touchend', function() {
+      el.classList.remove('pressed');
+    });
+
+    el.addEventListener('click', callback);
+  }
+
+  addFastTouch(document.getElementById('readyBtn'), goGuess);
+  addFastTouch(document.getElementById('againBtn'), newRound);
 
   newRound();
 </script>
