@@ -6,95 +6,109 @@
 <title>記憶遊戲</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+
   html, body {
-    font-family: Arial, sans-serif;
-    background: #f3f4f6;
     width: 100%;
     height: 100%;
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
     overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
   }
+
   body {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
   }
-  .phase { display: none; flex-direction: column; align-items: center; width: 100%; padding: 24px; }
-  .phase.active { display: flex; }
-  .label {
-    font-size: 2.5em;
-    color: #374151;
-    margin-bottom: 24px;
+
+  .phase {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 700px;
+    padding: 24px;
     text-align: center;
   }
+
+  .phase.active {
+    display: flex;
+  }
+
+  .label {
+    font-size: 2.4em;
+    color: #374151;
+    margin-bottom: 24px;
+  }
+
   .big-number {
-    font-size: 14em;
+    font-size: 12em;
     font-weight: bold;
-    margin-bottom: 40px;
     line-height: 1;
     color: #1e3a5f;
+    margin-bottom: 36px;
   }
+
   .big-icon {
-    font-size: 8em;
-    margin-bottom: 30px;
+    font-size: 7em;
     line-height: 1;
+    margin-bottom: 24px;
+  }
+
+  .btn,
+  .choice-btn {
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
   }
 
   .btn {
-    border: none;
-    border-radius: 20px;
-    padding: 28px 50px;
-    font-size: 1.8em;
     color: white;
-    cursor: pointer;
+    font-size: 1.8em;
+    padding: 28px 50px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    position: relative;
-    top: 0;
-    transition: all 0.05s ease;
     text-shadow: 0 2px 2px rgba(0,0,0,0.2);
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
   }
-  .btn:active, .btn.pressed {
-    top: 6px;
-    box-shadow: none !important;
+
+  .btn:active {
+    transform: translateY(4px);
   }
 
   .btn-orange {
     background: linear-gradient(to bottom, #fb923c, #ea580c);
     box-shadow: 0 8px 0 #c2410c, 0 12px 16px rgba(0,0,0,0.2);
   }
-  .btn-orange:active, .btn-orange.pressed {
-    background: linear-gradient(to bottom, #ea580c, #c2410c);
-    box-shadow: 0 2px 0 #9a3412;
+
+  .btn-orange:active {
+    box-shadow: 0 3px 0 #c2410c, 0 6px 10px rgba(0,0,0,0.18);
   }
 
   .btn-blue {
     background: linear-gradient(to bottom, #60a5fa, #2563eb);
     box-shadow: 0 8px 0 #1d4ed8, 0 12px 16px rgba(0,0,0,0.2);
   }
-  .btn-blue:active, .btn-blue.pressed {
-    background: linear-gradient(to bottom, #3b82f6, #2563eb);
-    box-shadow: 0 2px 0 #1d4ed8;
+
+  .btn-blue:active {
+    box-shadow: 0 3px 0 #1d4ed8, 0 6px 10px rgba(0,0,0,0.18);
   }
 
   .btn-green {
     background: linear-gradient(to bottom, #4ade80, #16a34a);
     box-shadow: 0 8px 0 #15803d, 0 12px 16px rgba(0,0,0,0.2);
   }
-  .btn-green:active, .btn-green.pressed {
-    background: linear-gradient(to bottom, #22c55e, #16a34a);
-    box-shadow: 0 2px 0 #15803d;
+
+  .btn-green:active {
+    box-shadow: 0 3px 0 #15803d, 0 6px 10px rgba(0,0,0,0.18);
   }
 
   .btn span.sub {
@@ -104,59 +118,62 @@
   }
 
   .choices {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
     width: 100%;
     max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
   }
+
   .choice-btn {
+    width: 100%;
     background: linear-gradient(to bottom, #ffffff, #e5e7eb);
-    border: none;
-    border-radius: 20px;
-    padding: 28px 30px;
+    box-shadow: 0 8px 0 #9ca3af, 0 12px 16px rgba(0,0,0,0.15);
+    padding: 26px 28px;
     display: flex;
     align-items: center;
-    gap: 24px;
-    cursor: pointer;
-    font-size: 1em;
-    position: relative;
-    top: 0;
-    box-shadow: 0 8px 0 #9ca3af, 0 12px 16px rgba(0,0,0,0.15);
-    transition: all 0.05s ease;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
+    gap: 22px;
+    transition: transform 0.05s ease, box-shadow 0.05s ease;
   }
-  .choice-btn:active, .choice-btn.pressed {
-    top: 6px;
-    box-shadow: 0 2px 0 #9ca3af;
-    background: linear-gradient(to bottom, #e5e7eb, #d1d5db);
+
+  .choice-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 3px 0 #9ca3af, 0 6px 10px rgba(0,0,0,0.12);
   }
 
   .choice-number {
-    font-size: 5em;
+    font-size: 4.8em;
     font-weight: bold;
     line-height: 1;
     color: #1e3a5f;
   }
+
   .choice-text {
-    font-size: 1.6em;
-    color: #6b7280;
+    font-size: 1.5em;
     font-weight: bold;
+    color: #6b7280;
   }
 
   .result-text {
     font-size: 3em;
     margin-bottom: 40px;
-    text-align: center;
   }
 
   .sound-status {
-    font-size: 1.3em;
+    min-height: 1.6em;
+    margin-top: 18px;
+    font-size: 1.2em;
     color: #6b7280;
-    margin-top: 20px;
-    text-align: center;
-    min-height: 1.5em;
+  }
+
+  @media (max-width: 768px) {
+    .label { font-size: 2em; }
+    .big-number { font-size: 9em; }
+    .big-icon { font-size: 6em; }
+    .btn { font-size: 1.5em; padding: 24px 32px; }
+    .choice-number { font-size: 4em; }
+    .choice-text { font-size: 1.3em; }
+    .result-text { font-size: 2.4em; }
   }
 </style>
 </head>
@@ -195,24 +212,15 @@
 </div>
 
 <script>
-  document.addEventListener('touchmove', function(e) {
-    e.preventDefault();
-  }, { passive: false });
-
-  document.addEventListener('scroll', function(e) {
-    e.preventDefault();
-  }, { passive: false });
-
   var answer = null;
   var choices = [];
   var audioCtx = null;
   var soundUnlocked = false;
-  var isCheckingAnswer = false;
-  var uiLocked = false;
+  var busy = false;
 
   function showPhase(id) {
-    document.querySelectorAll('.phase').forEach(function(p) {
-      p.classList.remove('active');
+    document.querySelectorAll('.phase').forEach(function(el) {
+      el.classList.remove('active');
     });
     document.getElementById(id).classList.add('active');
   }
@@ -230,120 +238,86 @@
 
   function pickChoices(correct) {
     var all = [1, 2, 3, 4, 5];
-    var others = all.filter(function(n) {
-      return n !== correct;
-    });
+    var others = all.filter(function(n) { return n !== correct; });
     var picked = shuffle(others).slice(0, 2);
     picked.push(correct);
     return shuffle(picked);
   }
 
-  function ensureAudioReady() {
+  function initAudio() {
     if (!audioCtx) {
       var Ctx = window.AudioContext || window.webkitAudioContext;
-      if (!Ctx) {
-        return Promise.reject(new Error('Web Audio not supported'));
-      }
+      if (!Ctx) throw new Error('Web Audio not supported');
       audioCtx = new Ctx();
     }
-
-    if (audioCtx.state === 'running') {
-      return Promise.resolve();
-    }
-
     return audioCtx.resume();
   }
 
-  function unlockAndTestSound() {
-    if (uiLocked) return;
-    uiLocked = true;
-
-    var status = document.getElementById('soundStatus');
-    status.textContent = '開聲中...';
-
-    ensureAudioReady().then(function() {
-      var now = audioCtx.currentTime;
-
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, now);
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(now);
-      osc.stop(now + 0.23);
-
-      var osc2 = audioCtx.createOscillator();
-      var gain2 = audioCtx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1320, now + 0.06);
-      gain2.gain.setValueAtTime(0.0001, now + 0.06);
-      gain2.gain.linearRampToValueAtTime(0.12, now + 0.08);
-      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
-      osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
-      osc2.start(now + 0.06);
-      osc2.stop(now + 0.29);
-
-      soundUnlocked = true;
-      status.textContent = '✅ 已開聲';
-
-      setTimeout(function() {
-        uiLocked = false;
-        newRound();
-      }, 350);
-    }).catch(function(err) {
-      console.log(err);
-      soundUnlocked = false;
-      status.textContent = '⚠️ 開聲失敗，請再撳一次';
-      uiLocked = false;
-    });
-  }
-
-  function playTone(freq, type, startTime, attack, peak, release) {
+  function simpleBeep(freq, duration, volume, type, when) {
+    if (!audioCtx) return;
+    var t = when || audioCtx.currentTime;
     var osc = audioCtx.createOscillator();
     var gain = audioCtx.createGain();
 
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, startTime);
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, t);
 
-    gain.gain.cancelScheduledValues(startTime);
-    gain.gain.setValueAtTime(0.0001, startTime);
-    gain.gain.linearRampToValueAtTime(peak, startTime + attack);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + release);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.linearRampToValueAtTime(volume, t + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
 
     osc.connect(gain);
     gain.connect(audioCtx.destination);
 
-    osc.start(startTime);
-    osc.stop(startTime + release + 0.02);
+    osc.start(t);
+    osc.stop(t + duration + 0.03);
   }
 
-  function playCheerfulChime() {
-    if (!soundUnlocked) return;
+  function unlockAndStart() {
+    if (busy) return;
+    busy = true;
 
-    ensureAudioReady().then(function() {
+    var status = document.getElementById('soundStatus');
+    status.textContent = '開聲中...';
+
+    initAudio().then(function() {
+      soundUnlocked = true;
+
+      var now = audioCtx.currentTime + 0.02;
+      simpleBeep(880, 0.18, 0.18, 'sine', now);
+      simpleBeep(1320, 0.18, 0.12, 'sine', now + 0.08);
+
+      status.textContent = '✅ 已開聲';
+
+      setTimeout(function() {
+        busy = false;
+        newRound();
+      }, 350);
+    }).catch(function(err) {
+      console.log(err);
+      status.textContent = '⚠️ 開聲失敗，請再撳一次';
+      busy = false;
+    });
+  }
+
+  function playCorrectSound() {
+    if (!soundUnlocked || !audioCtx) return;
+
+    audioCtx.resume().then(function() {
       var now = audioCtx.currentTime + 0.01;
-      var notes = [523.25, 659.25, 783.99, 1046.5];
-      var spacing = 0.1;
-
-      for (var i = 0; i < notes.length; i++) {
-        var t = now + i * spacing;
-        playTone(notes[i], 'sine', t, 0.015, 0.22, 0.28);
-        playTone(notes[i] * 2, 'triangle', t, 0.015, 0.05, 0.18);
-      }
+      simpleBeep(523.25, 0.22, 0.18, 'sine', now);
+      simpleBeep(659.25, 0.22, 0.18, 'sine', now + 0.10);
+      simpleBeep(783.99, 0.22, 0.18, 'sine', now + 0.20);
+      simpleBeep(1046.50, 0.30, 0.22, 'sine', now + 0.30);
     }).catch(function(err) {
       console.log(err);
     });
   }
 
-  function playWrongBuzz() {
-    if (!soundUnlocked) return;
+  function playWrongSound() {
+    if (!soundUnlocked || !audioCtx) return;
 
-    ensureAudioReady().then(function() {
+    audioCtx.resume().then(function() {
       var now = audioCtx.currentTime + 0.01;
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -353,20 +327,20 @@
       osc.frequency.linearRampToValueAtTime(120, now + 0.25);
 
       gain.gain.setValueAtTime(0.12, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
 
       osc.connect(gain);
       gain.connect(audioCtx.destination);
+
       osc.start(now);
-      osc.stop(now + 0.31);
+      osc.stop(now + 0.30);
     }).catch(function(err) {
       console.log(err);
     });
   }
 
   function newRound() {
-    if (uiLocked) return;
-    isCheckingAnswer = false;
+    if (busy) return;
     answer = Math.floor(Math.random() * 5) + 1;
     choices = pickChoices(answer);
     document.getElementById('showNumber').textContent = answer;
@@ -374,21 +348,20 @@
   }
 
   function goGuess() {
-    if (uiLocked) return;
+    if (busy) return;
 
     var container = document.getElementById('choicesContainer');
     container.innerHTML = '';
-    isCheckingAnswer = false;
 
     choices.forEach(function(num) {
       var btn = document.createElement('button');
-      btn.className = 'choice-btn';
       btn.type = 'button';
+      btn.className = 'choice-btn';
       btn.innerHTML =
         '<span class="choice-number">' + num + '</span>' +
         '<span class="choice-text">👈 撳呢個</span>';
 
-      bindPress(btn, function() {
+      btn.addEventListener('click', function() {
         checkAnswer(num);
       });
 
@@ -399,74 +372,29 @@
   }
 
   function checkAnswer(num) {
-    if (isCheckingAnswer || uiLocked) return;
-
-    isCheckingAnswer = true;
-    uiLocked = true;
+    if (busy) return;
+    busy = true;
 
     var resultText = document.getElementById('resultText');
 
     if (num === answer) {
       resultText.textContent = '✅ 答對了！好叻！';
-      playCheerfulChime();
+      playCorrectSound();
     } else {
       resultText.textContent = '❌ 唔啱呀，再試吓！';
-      playWrongBuzz();
+      playWrongSound();
     }
 
     showPhase('result');
 
     setTimeout(function() {
-      uiLocked = false;
-    }, 250);
+      busy = false;
+    }, 300);
   }
 
-  function bindPress(el, callback) {
-    var fired = false;
-
-    function pressStart(e) {
-      if (fired) return;
-      fired = true;
-      if (e) e.preventDefault();
-      el.classList.add('pressed');
-      callback();
-    }
-
-    function pressEnd() {
-      el.classList.remove('pressed');
-      setTimeout(function() {
-        fired = false;
-      }, 50);
-    }
-
-    if (window.PointerEvent) {
-      el.addEventListener('pointerdown', function(e) {
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        pressStart(e);
-      }, { passive: false });
-
-      el.addEventListener('pointerup', pressEnd);
-      el.addEventListener('pointercancel', pressEnd);
-    } else if ('ontouchstart' in window) {
-      el.addEventListener('touchstart', pressStart, { passive: false });
-      el.addEventListener('touchend', pressEnd, { passive: false });
-      el.addEventListener('touchcancel', pressEnd, { passive: false });
-    } else {
-      el.addEventListener('mousedown', function(e) {
-        if (e.button !== 0) return;
-        pressStart(e);
-      });
-      el.addEventListener('mouseup', pressEnd);
-      el.addEventListener('mouseleave', pressEnd);
-      el.addEventListener('click', function(e) {
-        e.preventDefault();
-      });
-    }
-  }
-
-  bindPress(document.getElementById('soundBtn'), unlockAndTestSound);
-  bindPress(document.getElementById('readyBtn'), goGuess);
-  bindPress(document.getElementById('againBtn'), newRound);
+  document.getElementById('soundBtn').addEventListener('click', unlockAndStart);
+  document.getElementById('readyBtn').addEventListener('click', goGuess);
+  document.getElementById('againBtn').addEventListener('click', newRound);
 
   document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended') {
