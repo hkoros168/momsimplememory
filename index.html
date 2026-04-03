@@ -127,10 +127,6 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  .choice-btn:hover {
-    background: linear-gradient(to bottom, #eff6ff, #bfdbfe);
-    box-shadow: 0 8px 0 #60a5fa, 0 12px 16px rgba(0,0,0,0.15);
-  }
   .choice-btn:active, .choice-btn.pressed {
     top: 6px;
     box-shadow: 0 2px 0 #9ca3af;
@@ -160,12 +156,12 @@
     color: #6b7280;
     margin-top: 20px;
     text-align: center;
+    min-height: 1.5em;
   }
 </style>
 </head>
 <body>
 
-<!-- PHASE 0: Sound unlock screen -->
 <div id="start" class="phase active">
   <div class="big-icon">🔊</div>
   <p class="label">記憶數字遊戲</p>
@@ -176,7 +172,6 @@
   <p id="soundStatus" class="sound-status"></p>
 </div>
 
-<!-- PHASE 1: Look at number -->
 <div id="look" class="phase">
   <p class="label">睇吓呢個數字：</p>
   <div id="showNumber" class="big-number"></div>
@@ -186,13 +181,11 @@
   </button>
 </div>
 
-<!-- PHASE 2: Guess -->
 <div id="guess" class="phase">
   <p class="label">請撳你見過嘅數字</p>
   <div id="choicesContainer" class="choices"></div>
 </div>
 
-<!-- PHASE 3: Result -->
 <div id="result" class="phase">
   <p id="resultText" class="result-text"></p>
   <button class="btn btn-green" id="againBtn">
@@ -202,151 +195,28 @@
 </div>
 
 <script>
-  document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
-  document.addEventListener('scroll', function(e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener('scroll', function(e) {
+    e.preventDefault();
+  }, { passive: false });
 
   var answer = null;
   var choices = [];
   var audioCtx = null;
+  var soundUnlocked = false;
+  var isCheckingAnswer = false;
 
-  // ---- SOUND UNLOCK from user tap ----
-  function unlockAndTestSound() {
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    } catch(e) {
-      document.getElementById('soundStatus').textContent = '⚠️ 呢部機唔支援聲音';
-      return;
-    }
-
-    // Resume if suspended (required on iOS)
-    var resumePromise = audioCtx.resume();
-    if (resumePromise && resumePromise.then) {
-      resumePromise.then(function() {
-        playTestTone();
-      });
-    } else {
-      playTestTone();
-    }
+  function showPhase(id) {
+    var phases = document.querySelectorAll('.phase');
+    phases.forEach(function(p) {
+      p.classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
   }
 
-  function playTestTone() {
-    // Play a short friendly "ding" to confirm sound works
-    var now = audioCtx.currentTime;
-
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = 880;
-    gain.gain.setValueAtTime(0, now);
-    gain.gain.linearRampToValueAtTime(0.3, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.45);
-
-    var osc2 = audioCtx.createOscillator();
-    var gain2 = audioCtx.createGain();
-    osc2.type = 'sine';
-    osc2.frequency.value = 1320;
-    gain2.gain.setValueAtTime(0, now + 0.08);
-    gain2.gain.linearRampToValueAtTime(0.2, now + 0.1);
-    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-    osc2.connect(gain2);
-    gain2.connect(audioCtx.destination);
-    osc2.start(now + 0.08);
-    osc2.stop(now + 0.55);
-
-    // Also try to unlock speech
-    try {
-      if ('speechSynthesis' in window) {
-        var warmup = new SpeechSynthesisUtterance(' ');
-        warmup.volume = 0.01;
-        warmup.rate = 10;
-        window.speechSynthesis.speak(warmup);
-      }
-    } catch(e) {}
-
-    // After short delay, move to game
-    setTimeout(function() {
-      newRound();
-    }, 600);
-  }
-
-  // ---- GAME SOUNDS ----
-  function playCheerfulChime() {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    var now = audioCtx.currentTime;
-    var notes = [523.25, 659.25, 783.99, 1046.50];
-    var spacing = 0.1;
-
-    for (var i = 0; i < notes.length; i++) {
-      (function(idx) {
-        var t = now + idx * spacing;
-        var osc = audioCtx.createOscillator();
-        var gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = notes[idx];
-        gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start(t);
-        osc.stop(t + 0.5);
-
-        var osc2 = audioCtx.createOscillator();
-        var gain2 = audioCtx.createGain();
-        osc2.type = 'triangle';
-        osc2.frequency.value = notes[idx] * 2;
-        gain2.gain.setValueAtTime(0, t);
-        gain2.gain.linearRampToValueAtTime(0.08, t + 0.02);
-        gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
-        osc2.connect(gain2);
-        gain2.connect(audioCtx.destination);
-        osc2.start(t);
-        osc2.stop(t + 0.4);
-      })(i);
-    }
-  }
-
-  function playWrongBuzz() {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-
-    var now = audioCtx.currentTime;
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(180, now);
-    osc.frequency.linearRampToValueAtTime(120, now + 0.3);
-    gain.gain.setValueAtTime(0.15, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start(now);
-    osc.stop(now + 0.4);
-  }
-
-  function trySayGood() {
-    try {
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        setTimeout(function() {
-          var u = new SpeechSynthesisUtterance('Good!');
-          u.lang = 'en-US';
-          u.pitch = 1.5;
-          u.rate = 1.05;
-          u.volume = 1;
-          window.speechSynthesis.speak(u);
-        }, 50);
-      }
-    } catch(e) {}
-  }
-
-  // ---- GAME LOGIC ----
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
@@ -360,18 +230,140 @@
 
   function pickChoices(correct) {
     var all = [1, 2, 3, 4, 5];
-    var others = all.filter(function(n) { return n !== correct; });
+    var others = all.filter(function(n) {
+      return n !== correct;
+    });
     var picked = shuffle(others).slice(0, 2);
     picked.push(correct);
     return shuffle(picked);
   }
 
-  function showPhase(id) {
-    document.querySelectorAll('.phase').forEach(function(p) { p.classList.remove('active'); });
-    document.getElementById(id).classList.add('active');
+  function ensureAudioReady() {
+    if (!audioCtx) {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) {
+        return Promise.reject(new Error('Web Audio not supported'));
+      }
+      audioCtx = new Ctx();
+    }
+
+    if (audioCtx.state === 'running') {
+      return Promise.resolve();
+    }
+
+    return audioCtx.resume();
+  }
+
+  function unlockAndTestSound() {
+    var status = document.getElementById('soundStatus');
+    status.textContent = '開聲中...';
+
+    ensureAudioReady().then(function() {
+      var now = audioCtx.currentTime;
+
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, now);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(0.18, now + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.23);
+
+      var osc2 = audioCtx.createOscillator();
+      var gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(1320, now + 0.06);
+      gain2.gain.setValueAtTime(0.0001, now + 0.06);
+      gain2.gain.linearRampToValueAtTime(0.12, now + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start(now + 0.06);
+      osc2.stop(now + 0.29);
+
+      soundUnlocked = true;
+      status.textContent = '✅ 已開聲';
+
+      setTimeout(function() {
+        newRound();
+      }, 350);
+    }).catch(function(err) {
+      console.log(err);
+      soundUnlocked = false;
+      status.textContent = '⚠️ 開聲失敗，請再撳一次';
+    });
+  }
+
+  function playCheerfulChime() {
+    if (!soundUnlocked) return;
+
+    ensureAudioReady().then(function() {
+      var now = audioCtx.currentTime;
+      var notes = [523.25, 659.25, 783.99, 1046.50];
+      var spacing = 0.09;
+
+      for (var i = 0; i < notes.length; i++) {
+        (function(idx) {
+          var t = now + idx * spacing;
+
+          var osc = audioCtx.createOscillator();
+          var gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(notes[idx], t);
+          gain.gain.setValueAtTime(0.0001, t);
+          gain.gain.linearRampToValueAtTime(0.20, t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.33);
+
+          var osc2 = audioCtx.createOscillator();
+          var gain2 = audioCtx.createGain();
+          osc2.type = 'triangle';
+          osc2.frequency.setValueAtTime(notes[idx] * 2, t);
+          gain2.gain.setValueAtTime(0.0001, t);
+          gain2.gain.linearRampToValueAtTime(0.06, t + 0.02);
+          gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+          osc2.connect(gain2);
+          gain2.connect(audioCtx.destination);
+          osc2.start(t);
+          osc2.stop(t + 0.23);
+        })(i);
+      }
+    }).catch(function(err) {
+      console.log(err);
+    });
+  }
+
+  function playWrongBuzz() {
+    if (!soundUnlocked) return;
+
+    ensureAudioReady().then(function() {
+      var now = audioCtx.currentTime;
+
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.linearRampToValueAtTime(120, now + 0.25);
+      gain.gain.setValueAtTime(0.12, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.31);
+    }).catch(function(err) {
+      console.log(err);
+    });
   }
 
   function newRound() {
+    isCheckingAnswer = false;
     answer = Math.floor(Math.random() * 5) + 1;
     choices = pickChoices(answer);
     document.getElementById('showNumber').textContent = answer;
@@ -381,6 +373,7 @@
   function goGuess() {
     var container = document.getElementById('choicesContainer');
     container.innerHTML = '';
+    isCheckingAnswer = false;
 
     choices.forEach(function(num) {
       var btn = document.createElement('button');
@@ -389,17 +382,7 @@
         '<span class="choice-number">' + num + '</span>' +
         '<span class="choice-text">👈 撳呢個</span>';
 
-      btn.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        btn.classList.add('pressed');
-        checkAnswer(num);
-      }, { passive: false });
-
-      btn.addEventListener('touchend', function() {
-        btn.classList.remove('pressed');
-      });
-
-      btn.addEventListener('click', function() {
+      addFastTouch(btn, function() {
         checkAnswer(num);
       });
 
@@ -410,20 +393,27 @@
   }
 
   function checkAnswer(num) {
+    if (isCheckingAnswer) return;
+    isCheckingAnswer = true;
+
     var resultText = document.getElementById('resultText');
+
     if (num === answer) {
       resultText.textContent = '✅ 答對了！好叻！';
       playCheerfulChime();
-      trySayGood();
     } else {
       resultText.textContent = '❌ 唔啱呀，再試吓！';
       playWrongBuzz();
     }
+
     showPhase('result');
   }
 
   function addFastTouch(el, callback) {
+    var touched = false;
+
     el.addEventListener('touchstart', function(e) {
+      touched = true;
       e.preventDefault();
       el.classList.add('pressed');
       callback();
@@ -431,18 +421,38 @@
 
     el.addEventListener('touchend', function() {
       el.classList.remove('pressed');
+      setTimeout(function() {
+        touched = false;
+      }, 400);
     });
 
-    el.addEventListener('click', function() {
+    el.addEventListener('touchcancel', function() {
+      el.classList.remove('pressed');
+      setTimeout(function() {
+        touched = false;
+      }, 400);
+    });
+
+    el.addEventListener('click', function(e) {
+      if (touched) {
+        e.preventDefault();
+        return;
+      }
       callback();
     });
   }
 
-  // ---- WIRE UP BUTTONS ----
   addFastTouch(document.getElementById('soundBtn'), unlockAndTestSound);
   addFastTouch(document.getElementById('readyBtn'), goGuess);
   addFastTouch(document.getElementById('againBtn'), newRound);
 
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(function(err) {
+        console.log(err);
+      });
+    }
+  });
 </script>
 
 </body>
