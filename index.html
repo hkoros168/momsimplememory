@@ -165,7 +165,7 @@
 <div id="start" class="phase active">
   <div class="big-icon">🔊</div>
   <p class="label">記憶數字遊戲</p>
-  <button class="btn btn-orange" id="soundBtn">
+  <button class="btn btn-orange" id="soundBtn" type="button">
     <span>👆 撳呢度開聲</span>
     <span class="sub">開咗聲先可以玩！</span>
   </button>
@@ -175,7 +175,7 @@
 <div id="look" class="phase">
   <p class="label">睇吓呢個數字：</p>
   <div id="showNumber" class="big-number"></div>
-  <button class="btn btn-blue" id="readyBtn">
+  <button class="btn btn-blue" id="readyBtn" type="button">
     <span>👆 記住咗就撳呢度</span>
     <span class="sub">個數字會消失㗎！</span>
   </button>
@@ -188,7 +188,7 @@
 
 <div id="result" class="phase">
   <p id="resultText" class="result-text"></p>
-  <button class="btn btn-green" id="againBtn">
+  <button class="btn btn-green" id="againBtn" type="button">
     <span>👆 撳呢度再玩</span>
     <span class="sub">會出新數字㗎！</span>
   </button>
@@ -208,10 +208,10 @@
   var audioCtx = null;
   var soundUnlocked = false;
   var isCheckingAnswer = false;
+  var uiLocked = false;
 
   function showPhase(id) {
-    var phases = document.querySelectorAll('.phase');
-    phases.forEach(function(p) {
+    document.querySelectorAll('.phase').forEach(function(p) {
       p.classList.remove('active');
     });
     document.getElementById(id).classList.add('active');
@@ -255,6 +255,9 @@
   }
 
   function unlockAndTestSound() {
+    if (uiLocked) return;
+    uiLocked = true;
+
     var status = document.getElementById('soundStatus');
     status.textContent = '開聲中...';
 
@@ -289,51 +292,48 @@
       status.textContent = '✅ 已開聲';
 
       setTimeout(function() {
+        uiLocked = false;
         newRound();
       }, 350);
     }).catch(function(err) {
       console.log(err);
       soundUnlocked = false;
       status.textContent = '⚠️ 開聲失敗，請再撳一次';
+      uiLocked = false;
     });
+  }
+
+  function playTone(freq, type, startTime, attack, peak, release) {
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+
+    gain.gain.cancelScheduledValues(startTime);
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.linearRampToValueAtTime(peak, startTime + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + release);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime + release + 0.02);
   }
 
   function playCheerfulChime() {
     if (!soundUnlocked) return;
 
     ensureAudioReady().then(function() {
-      var now = audioCtx.currentTime;
-      var notes = [523.25, 659.25, 783.99, 1046.50];
-      var spacing = 0.09;
+      var now = audioCtx.currentTime + 0.01;
+      var notes = [523.25, 659.25, 783.99, 1046.5];
+      var spacing = 0.1;
 
       for (var i = 0; i < notes.length; i++) {
-        (function(idx) {
-          var t = now + idx * spacing;
-
-          var osc = audioCtx.createOscillator();
-          var gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(notes[idx], t);
-          gain.gain.setValueAtTime(0.0001, t);
-          gain.gain.linearRampToValueAtTime(0.20, t + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.32);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(t);
-          osc.stop(t + 0.33);
-
-          var osc2 = audioCtx.createOscillator();
-          var gain2 = audioCtx.createGain();
-          osc2.type = 'triangle';
-          osc2.frequency.setValueAtTime(notes[idx] * 2, t);
-          gain2.gain.setValueAtTime(0.0001, t);
-          gain2.gain.linearRampToValueAtTime(0.06, t + 0.02);
-          gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-          osc2.connect(gain2);
-          gain2.connect(audioCtx.destination);
-          osc2.start(t);
-          osc2.stop(t + 0.23);
-        })(i);
+        var t = now + i * spacing;
+        playTone(notes[i], 'sine', t, 0.015, 0.22, 0.28);
+        playTone(notes[i] * 2, 'triangle', t, 0.015, 0.05, 0.18);
       }
     }).catch(function(err) {
       console.log(err);
@@ -344,15 +344,17 @@
     if (!soundUnlocked) return;
 
     ensureAudioReady().then(function() {
-      var now = audioCtx.currentTime;
-
+      var now = audioCtx.currentTime + 0.01;
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
+
       osc.type = 'square';
       osc.frequency.setValueAtTime(180, now);
       osc.frequency.linearRampToValueAtTime(120, now + 0.25);
+
       gain.gain.setValueAtTime(0.12, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start(now);
@@ -363,6 +365,7 @@
   }
 
   function newRound() {
+    if (uiLocked) return;
     isCheckingAnswer = false;
     answer = Math.floor(Math.random() * 5) + 1;
     choices = pickChoices(answer);
@@ -371,6 +374,8 @@
   }
 
   function goGuess() {
+    if (uiLocked) return;
+
     var container = document.getElementById('choicesContainer');
     container.innerHTML = '';
     isCheckingAnswer = false;
@@ -378,11 +383,12 @@
     choices.forEach(function(num) {
       var btn = document.createElement('button');
       btn.className = 'choice-btn';
+      btn.type = 'button';
       btn.innerHTML =
         '<span class="choice-number">' + num + '</span>' +
         '<span class="choice-text">👈 撳呢個</span>';
 
-      addFastTouch(btn, function() {
+      bindPress(btn, function() {
         checkAnswer(num);
       });
 
@@ -393,8 +399,10 @@
   }
 
   function checkAnswer(num) {
-    if (isCheckingAnswer) return;
+    if (isCheckingAnswer || uiLocked) return;
+
     isCheckingAnswer = true;
+    uiLocked = true;
 
     var resultText = document.getElementById('resultText');
 
@@ -407,44 +415,58 @@
     }
 
     showPhase('result');
+
+    setTimeout(function() {
+      uiLocked = false;
+    }, 250);
   }
 
-  function addFastTouch(el, callback) {
-    var touched = false;
+  function bindPress(el, callback) {
+    var fired = false;
 
-    el.addEventListener('touchstart', function(e) {
-      touched = true;
-      e.preventDefault();
+    function pressStart(e) {
+      if (fired) return;
+      fired = true;
+      if (e) e.preventDefault();
       el.classList.add('pressed');
       callback();
-    }, { passive: false });
+    }
 
-    el.addEventListener('touchend', function() {
+    function pressEnd() {
       el.classList.remove('pressed');
       setTimeout(function() {
-        touched = false;
-      }, 400);
-    });
+        fired = false;
+      }, 50);
+    }
 
-    el.addEventListener('touchcancel', function() {
-      el.classList.remove('pressed');
-      setTimeout(function() {
-        touched = false;
-      }, 400);
-    });
+    if (window.PointerEvent) {
+      el.addEventListener('pointerdown', function(e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        pressStart(e);
+      }, { passive: false });
 
-    el.addEventListener('click', function(e) {
-      if (touched) {
+      el.addEventListener('pointerup', pressEnd);
+      el.addEventListener('pointercancel', pressEnd);
+    } else if ('ontouchstart' in window) {
+      el.addEventListener('touchstart', pressStart, { passive: false });
+      el.addEventListener('touchend', pressEnd, { passive: false });
+      el.addEventListener('touchcancel', pressEnd, { passive: false });
+    } else {
+      el.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        pressStart(e);
+      });
+      el.addEventListener('mouseup', pressEnd);
+      el.addEventListener('mouseleave', pressEnd);
+      el.addEventListener('click', function(e) {
         e.preventDefault();
-        return;
-      }
-      callback();
-    });
+      });
+    }
   }
 
-  addFastTouch(document.getElementById('soundBtn'), unlockAndTestSound);
-  addFastTouch(document.getElementById('readyBtn'), goGuess);
-  addFastTouch(document.getElementById('againBtn'), newRound);
+  bindPress(document.getElementById('soundBtn'), unlockAndTestSound);
+  bindPress(document.getElementById('readyBtn'), goGuess);
+  bindPress(document.getElementById('againBtn'), newRound);
 
   document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'visible' && audioCtx && audioCtx.state === 'suspended') {
