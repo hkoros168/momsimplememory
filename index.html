@@ -172,12 +172,54 @@
 </div>
 
 <script>
-  // Prevent all scrolling
   document.addEventListener('touchmove', function(e) { e.preventDefault(); }, { passive: false });
   document.addEventListener('scroll', function(e) { e.preventDefault(); }, { passive: false });
 
   let answer = null;
   let choices = [];
+  let femaleVoice = null;
+
+  function loadVoices() {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) return;
+
+    const femaleNames = ['samantha', 'karen', 'victoria', 'fiona', 'moira', 'tessa', 'kate', 'susan', 'zira', 'hazel', 'female'];
+    const enVoices = voices.filter(v => v.lang.startsWith('en'));
+
+    for (let i = 0; i < enVoices.length; i++) {
+      const name = enVoices[i].name.toLowerCase();
+      for (let j = 0; j < femaleNames.length; j++) {
+        if (name.includes(femaleNames[j])) {
+          femaleVoice = enVoices[i];
+          return;
+        }
+      }
+    }
+
+    if (!femaleVoice && enVoices.length > 0) {
+      femaleVoice = enVoices[0];
+    }
+  }
+
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  function sayGood() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance('Good!');
+      utterance.lang = 'en-US';
+      utterance.rate = 1.05;
+      utterance.pitch = 1.6;
+      utterance.volume = 1;
+      if (femaleVoice) {
+        utterance.voice = femaleVoice;
+      }
+      window.speechSynthesis.speak(utterance);
+    }
+  }
 
   function shuffle(arr) {
     const a = [...arr];
@@ -243,13 +285,13 @@
     const resultText = document.getElementById('resultText');
     if (num === answer) {
       resultText.textContent = '✅ 答對了！好叻！';
+      sayGood();
     } else {
       resultText.textContent = '❌ 唔啱呀，再試吓！';
     }
     showPhase('result');
   }
 
-  // Fast touch handling for main buttons
   function addFastTouch(el, callback) {
     el.addEventListener('touchstart', function(e) {
       e.preventDefault();
