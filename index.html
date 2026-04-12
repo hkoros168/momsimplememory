@@ -35,13 +35,6 @@
     margin-bottom: 24px;
     text-align: center;
   }
-  .big-number {
-    font-size: 14em;
-    font-weight: bold;
-    margin-bottom: 40px;
-    line-height: 1;
-    color: #1e3a5f;
-  }
   .big-icon {
     font-size: 8em;
     margin-bottom: 30px;
@@ -82,6 +75,7 @@
   .btn-blue {
     background: linear-gradient(to bottom, #60a5fa, #2563eb);
     box-shadow: 0 8px 0 #1d4ed8, 0 12px 16px rgba(0,0,0,0.2);
+    padding: 30px 60px;
   }
   .btn-blue:active, .btn-blue.pressed {
     background: linear-gradient(to bottom, #3b82f6, #2563eb);
@@ -92,6 +86,17 @@
     font-size: 0.65em;
     margin-top: 6px;
     opacity: 0.85;
+  }
+
+  .btn-number {
+    font-size: 4em;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .btn-number-label {
+    font-size: 1em;
+    opacity: 0.9;
   }
 
   .choices {
@@ -183,29 +188,27 @@
   <div class="big-icon">🔊</div>
   <p class="label">記憶數字遊戲</p>
   <button class="btn btn-orange" id="soundBtn">
-    <span>👆 撳呢度開聲</span>
-    <span class="sub">開咗聲先可以玩！</span>
+    <span>👆 撳呢度開始</span>
   </button>
   <p id="soundStatus" class="sound-status"></p>
 </div>
 
-<!-- PHASE 1: Look at number -->
+<!-- PHASE 1: Look at number (number is ON the button) -->
 <div id="look" class="phase">
-  <p class="label">睇吓呢個數字：</p>
-  <div id="showNumber" class="big-number"></div>
+  <p class="label">記住呢個數字！</p>
   <button class="btn btn-blue" id="readyBtn">
-    <span>👆 記住咗就撳呢度</span>
-    <span class="sub">個數字會消失㗎！</span>
+    <span class="btn-number" id="showNumber"></span>
+    <span class="btn-number-label">👆 記住咗就撳</span>
   </button>
 </div>
 
 <!-- PHASE 2: Guess -->
 <div id="guess" class="phase">
-  <p class="label">請撳你見過嘅數字</p>
+  <p class="label">邊個啱？</p>
   <div id="choicesContainer" class="choices"></div>
 </div>
 
-<!-- PHASE 3: Result (auto-advance, no button) -->
+<!-- PHASE 3: Result (auto-advance) -->
 <div id="result" class="phase">
   <div id="resultIcon" class="result-icon"></div>
   <p id="resultText" class="result-text"></p>
@@ -227,7 +230,6 @@
   var autoAdvanceTimer = null;
   var countdownInterval = null;
 
-  // ---- SOUND UNLOCK from user tap ----
   function unlockAndTestSound() {
     try {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -287,7 +289,6 @@
     }, 600);
   }
 
-  // ---- GAME SOUNDS ----
   function playCheerfulChime() {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -360,7 +361,6 @@
     } catch(e) {}
   }
 
-  // ---- GAME LOGIC ----
   function shuffle(arr) {
     var a = arr.slice();
     for (var i = a.length - 1; i > 0; i--) {
@@ -430,7 +430,6 @@
     var dots = document.querySelectorAll('#countdownDots .countdown-dot');
     var remaining = 4;
 
-    // Reset all dots to filled
     for (var i = 0; i < dots.length; i++) {
       dots[i].classList.add('filled');
     }
@@ -457,12 +456,12 @@
 
     if (num === answer) {
       resultIcon.textContent = '🎉';
-      resultText.textContent = '答對了！好叻！';
+      resultText.textContent = '啱咗！好叻！';
       playCheerfulChime();
       trySayGood();
     } else {
       resultIcon.textContent = '😢';
-      resultText.textContent = '唔啱呀，答案係 ' + answer + '！';
+      resultText.textContent = '唔啱，答案係 ' + answer;
       playWrongBuzz();
     }
 
@@ -486,7 +485,6 @@
     });
   }
 
-  // ---- WIRE UP BUTTONS ----
   addFastTouch(document.getElementById('soundBtn'), unlockAndTestSound);
   addFastTouch(document.getElementById('readyBtn'), goGuess);
 
