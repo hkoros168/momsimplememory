@@ -208,7 +208,7 @@
     width: 0%;
     background: linear-gradient(to right, #fbbf24, #f59e0b);
     border-radius: 999px;
-    transition: width 2s linear;
+    transition: width 4s linear;
   }
 </style>
 </head>
@@ -446,14 +446,14 @@
 
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        bar.style.transition = 'width 2s linear';
+        bar.style.transition = 'width 4s linear';
         bar.style.width = '100%';
       });
     });
 
     thinkingTimer = setTimeout(function() {
       goGuess();
-    }, 2000);
+    }, 4000);
   }
 
   function goGuess() {
