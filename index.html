@@ -208,7 +208,7 @@
     width: 0%;
     background: linear-gradient(to right, #fbbf24, #f59e0b);
     border-radius: 999px;
-    transition: width 4s linear;
+    transition: width 5s linear;
   }
 </style>
 </head>
@@ -414,7 +414,7 @@
   }
 
   function pickChoices(correct) {
-    var all = [1, 2, 3, 4, 5];
+    var all = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     var others = all.filter(function(n) { return n !== correct; });
     var picked = shuffle(others).slice(0, 2);
     picked.push(correct);
@@ -431,7 +431,7 @@
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
     if (thinkingTimer) { clearTimeout(thinkingTimer); thinkingTimer = null; }
 
-    answer = Math.floor(Math.random() * 5) + 1;
+    answer = Math.floor(Math.random() * 9) + 1;
     choices = pickChoices(answer);
     document.getElementById('showNumber').textContent = answer;
     showPhase('look');
@@ -446,14 +446,14 @@
 
     requestAnimationFrame(function() {
       requestAnimationFrame(function() {
-        bar.style.transition = 'width 4s linear';
+        bar.style.transition = 'width 5s linear';
         bar.style.width = '100%';
       });
     });
 
     thinkingTimer = setTimeout(function() {
       goGuess();
-    }, 4000);
+    }, 5000);
   }
 
   function goGuess() {
