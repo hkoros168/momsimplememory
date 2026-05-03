@@ -414,9 +414,13 @@
   }
 
   function pickChoices(correct) {
-    var all = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    var others = all.filter(function(n) { return n !== correct; });
-    var picked = shuffle(others).slice(0, 2);
+    var picked = [];
+    while (picked.length < 2) {
+      var n = Math.floor(Math.random() * 100) + 1;
+      if (n !== correct && picked.indexOf(n) === -1) {
+        picked.push(n);
+      }
+    }
     picked.push(correct);
     return shuffle(picked);
   }
@@ -431,7 +435,7 @@
     if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
     if (thinkingTimer) { clearTimeout(thinkingTimer); thinkingTimer = null; }
 
-    answer = Math.floor(Math.random() * 9) + 1;
+    answer = Math.floor(Math.random() * 100) + 1;
     choices = pickChoices(answer);
     document.getElementById('showNumber').textContent = answer;
     showPhase('look');
